@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NEON TYPING RUSH: ULTIMATE</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle, #17234d, #050510 75%);
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 25px 12px;
+}
+
+h1 {
+  color: #00f5ff;
+  font-size: clamp(28px, 6vw, 48px);
+  text-shadow: 0 0 12px #00f5ff, 0 0 30px #0066ff;
+}
+
+.panel {
+  max-width: 650px;
+  margin: 20px auto;
+  padding: 25px 15px;
+  background: #0b1028;
+  border: 2px solid #00f5ff;
+  border-radius: 20px;
+  box-shadow: 0 0 25px #00f5ff55;
+}
+
+#word {
+  color: #39ff88;
+  font-size: clamp(30px, 7vw, 48px);
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px #39ff88;
+  overflow-wrap: anywhere;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.stat {
+  background: #171d3b;
+  border: 1px solid #a855f7;
+  padding: 12px;
+  border-radius: 12px;
+  min-width: 115px;
+}
+
+.stat strong {
+  display: block;
+  color: #ff35c5;
+  font-size: 23px;
+  margin-top: 5px;
+}
+
+input, button {
+  font-size: 18px;
+  padding: 13px;
+  border-radius: 10px;
+}
+
+input {
+  width: min(330px, 95%);
+  background: #050510;
+  color: #00f5ff;
+  border: 2px solid #00f5ff;
+  text-align: center;
+  outline: none;
+}
+
+button {
+  margin: 8px;
+  background: #00f5ff;
+  color: #050510;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 12px #00f5ff66;
+}
+
+button:hover {
+  background: #39ff88;
+  transform: scale(1.04);
+}
+
+#endPage { display: none; }
+
+#bigScore {
+  color: #39ff88;
+  font-size: clamp(75px, 18vw, 130px);
+  font-weight: 900;
+  text-shadow: 0 0 25px #39ff88;
+  margin: 15px 0;
+}
+
+#message {
+  color: #ff35c5;
+  font-size: 25px;
+}
+
+#feedback {
+  min-height: 28px;
+  color: #ffe66d;
+  font-weight: bold;
+}
+
+#progress {
+  color: #00f5ff;
+  margin: 15px;
+}
+
+footer {
+  color: #8d9acb;
+  margin: 25px;
+}
+</style>
+</head>
+<body>
+
+<h1>⚡ NEON TYPING RUSH ⚡</h1>
+<p>🔥 TYPE FAST. BUILD COMBOS. BE A LEGEND. 🔥</p>
+
+<div class="panel" id="game">
+  <div class="stats">
+    <div class="stat">⭐ SCORE<strong id="score">0</strong></div>
+    <div class="stat">⏱️ TIME<strong id="time">30</strong></div>
+    <div class="stat">🔥 COMBO<strong id="combo">x0</strong></div>
+    <div class="stat">🚀 LEVEL<strong id="level">1</strong></div>
+  </div>
+
+  <h2 id="word">READY TO PLAY?</h2>
+  <p id="feedback">Press START to begin!</p>
+  <input id="answer" placeholder="Type the word..." disabled>
+  <br>
+  <button id="startBtn" onclick="startGame()">⚡ START GAME</button>
+  <p id="progress">Reach 100 points to level up!</p>
+</div>
+
+<div class="panel" id="endPage">
+  <h1>🏆 GAME OVER 🏆</h1>
+  <h2>YOUR FINAL SCORE</h2>
+  <div id="bigScore">0</div>
+  <h2 id="message">NICE WORK!</h2>
+  <p id="finalStats"></p>
+  <button onclick="startGame()">🔄 PLAY AGAIN</button>
+</div>
+
+<footer>NEON RUSH GAMING • CHALLENGE YOUR SPEED</footer>
+
+<script>
+const levels = [
+  ["PYTHON","IS","EASY","ELEPHANT","COUNTRY"],
+  ["PICTURE", "PYTHON","SOCCER","TYPING","NINTENDO"],
+  ["FREEDOM","JOURNY","CHAMPION","FOOTBALL"],
+  ["HISTORY","HELICOPTER","PLAYSTATION","KEYBOARD"],
+  ["SUPERSPEED","INTERSTELLAR","POWERHOUSE",""]
+];
+
+let score = 0;
+let time = 30;
+let combo = 0;
+let level = 1;
+let timer;
+let word = "";
+let playing = false;
+let best = 0;
+
+const $ = id => document.getElementById(id);
+
+function nextWord() {
+  const list = levels[level - 1];
+  word = list[Math.floor(Math.random() * list.length)];
+  $("word").textContent = word;
+}
+
+function update() {
+  $("score").textContent = score;
+  $("time").textContent = time;
+  $("combo").textContent = "x" + combo;
+  $("level").textContent = level;
+  $("progress").textContent =
+    level === 5 ? "🔥 MAX LEVEL! KEEP GOING!" :
+    "Next level at " + (level * 100) + " points!";
+}
+
+function startGame() {
+  clearInterval(timer);
+
+  score = 0;
+  time = 30;
+  combo = 0;
+  level = 1;
+  playing = true;
+
+  $("game").style.display = "block";
+  $("endPage").style.display = "none";
+  $("feedback").textContent = "GO GO GO!";
+  $("answer").disabled = false;
+  $("answer").value = "";
+
+  nextWord();
+  update();
+  $("answer").focus();
+
+  timer = setInterval(() => {
+    time--;
+    update();
+
+    if (time <= 0) endGame();
+  }, 1000);
+}
+
+function endGame() {
+  clearInterval(timer);
+  playing = false;
+  $("answer").disabled = true;
+  $("game").style.display = "none";
+  $("endPage").style.display = "block";
+
+  $("bigScore").textContent = score;
+  $("finalStats").textContent =
+    "Highest combo: x" + combo + " • Level reached: " + level;
+
+  if (score >= 300) {
+    $("message").textContent = "⚡ LEGENDARY TYPING!";
+  } else if (score >= 150) {
+    $("message").textContent = "🔥 AWESOME GAMING!";
+  } else {
+    $("message").textContent = "💪 KEEP TRAINING!";
+  }
+}
+
+$("answer").addEventListener("input", function() {
+  if (!playing) return;
+
+  if (this.value.trim().toUpperCase() === word) {
+    combo++;
+
+    let points = 10;
+    if (combo % 5 === 0) {
+      points += 20;
+      $("feedback").textContent = "🔥 COMBO BONUS! +30 POINTS!";
+    } else {
+      $("feedback").textContent = "⚡ CORRECT! +" + points;
+    }
+
+    score += points;
+
+    let newLevel = Math.min(5, Math.floor(score / 100) + 1);
+    if (newLevel > level) {
+      level = newLevel;
+      $("feedback").textContent = "🚀 LEVEL " + level + " UNLOCKED!";
+    }
+
+    this.value = "";
+    nextWord();
+    update();
+  }
+});
+</script>
+
+</body>
+</html>
